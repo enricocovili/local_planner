@@ -1,0 +1,34 @@
+local_planner:
+    ros__parameters:
+        
+        generic:
+            eventType: "autocross"  # Possible values: "acceleration" "autocross" "skidpad". overrided by the launch file
+        
+            topics:
+                subscribers:
+                    race_status: "/planning/race_status"
+                    odometry: "/Odometry"
+                    slam_cones: "/slam/cones_positions"
+                publishers:
+                    borders: "/planning/borders"
+                    center_line: "/planning/center_line"
+                    borders_completed: "/planning/borders_completed"
+                    center_line_completed: "/planning/center_line_completed"
+
+        autocross:
+            filler: true
+            
+        acceleration:
+            lineWidth: 0.1
+            metersOverHorizon: 30.0
+
+        skidpad:
+            centerX : 15.0
+            centerY : 9.125
+            innerRadius : 7.625
+            maxDistance: 0.5
+            radiusOffset : 0.2 # tuned for the larger trajectory, 0.0 to revert
+            circlePoints : 80
+            linePoints : 30
+            endX: 100.0
+            minimumConesNumber: 3 #minumum number of cones to start the process
