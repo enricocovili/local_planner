@@ -22,7 +22,7 @@ def generate_launch_description():
     )
 
     local_planner_node = Node(
-        name='local_planner',
+        name='local_planner_node',
         package='local_planner',
         executable='local_planner_node',
         parameters=[config,  {'event_type': LaunchConfiguration('event_type')}],

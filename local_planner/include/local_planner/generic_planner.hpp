@@ -33,12 +33,13 @@ private:
     nav_msgs::msg::Odometry::SharedPtr m_odometry;
 
     rclcpp::Logger m_logger = this->get_logger();
+    rclcpp::TimerBase::SharedPtr m_timer;
 
 public:
     GenericPlanner();
     virtual ~GenericPlanner() = default;
-    virtual void init() const {};
-    void load_params();
+    void init();
+    virtual void load_params();
     void create_connections(); // setup subs, pubs and callbacks
 
     void race_status_cb(mmr_base::msg::RaceStatus::SharedPtr race_status) {m_race_status = race_status;}

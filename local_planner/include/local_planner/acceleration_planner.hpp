@@ -1,5 +1,5 @@
-#ifndef ACCERLATION_LOCAL_PLANNER_HPP
-#define ACCERLATION_LOCAL_PLANNER_HPP
+#ifndef ACCELLARATION_LOCAL_PLANNER_HPP
+#define ACCELLARATION_LOCAL_PLANNER_HPP
 
 #include <local_planner/generic_planner.hpp>
 
@@ -9,9 +9,11 @@ namespace local_planning {
 class AccelerationPlanner : public GenericPlanner
 {
 private:
-    /* data */
+    double m_meters_over_horizon;
 public:
-    AccelerationPlanner(/* args */);
+    AccelerationPlanner();
+    void slam_cones_cb(mmr_base::msg::Marker::SharedPtr) const override;
+    void load_params() override;
 };
     
 } // namespace local_plannings

@@ -1,34 +1,32 @@
 local_planner:
-    ros__parameters:
-        
-        generic:
-            eventType: "autocross"  # Possible values: "acceleration" "autocross" "skidpad". overrided by the launch file
-        
-            topics:
-                subscribers:
-                    race_status: "/planning/race_status"
-                    odometry: "/Odometry"
-                    slam_cones: "/slam/cones_positions"
-                publishers:
-                    borders: "/planning/borders"
-                    center_line: "/planning/center_line"
-                    borders_completed: "/planning/borders_completed"
-                    center_line_completed: "/planning/center_line_completed"
+  ros__parameters:
+    generic:
+      event_type: "autocross"  # Possible values: "acceleration" "autocross" "skidpad". overrided by launch file
+      topics:
+        subscribers:
+          race_status: "/planning/race_status"
+          odometry: "/Odometry"
+          slam_cones: "/slam/cones_positions"
+        publishers:
+          borders: "/planning/borders"
+          center_line: "/planning/center_line"
+          borders_completed: "/planning/borders_completed"
+          center_line_completed: "/planning/center_line_completed"
 
-        autocross:
-            filler: true
-            
-        acceleration:
-            lineWidth: 0.1
-            metersOverHorizon: 30.0
+    autocross:
+      todo: "todo"
 
-        skidpad:
-            centerX : 15.0
-            centerY : 9.125
-            innerRadius : 7.625
-            maxDistance: 0.5
-            radiusOffset : 0.2 # tuned for the larger trajectory, 0.0 to revert
-            circlePoints : 80
-            linePoints : 30
-            endX: 100.0
-            minimumConesNumber: 3 #minumum number of cones to start the process
+    acceleration:
+      line_width: 0.1
+      meters_over_horizon: 30.0
+
+    skidpad:
+      center_x : 15.0
+      center_y : 9.125
+      inner_radius : 7.625
+      max_distance_from_center: 0.5 # max dist from theoretical center
+      radius_offset : 0.2 # tuned for the larger trajectory, 0.0 to revert
+      circle_points : 80
+      line_points : 30
+      end_x: 100.0
+      minimum_cones: 3 #minumum number of cones to start the process
