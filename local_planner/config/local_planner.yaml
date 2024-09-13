@@ -21,7 +21,7 @@ local_planner:
       todo: "todo"
 
     acceleration:
-      meters_over_horizon: 30.0
+      meters_over_horizon: 150.0
 
     skidpad:
       center_x : 15.0

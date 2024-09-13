@@ -27,7 +27,13 @@ namespace local_planning
         double c;
 
         Line(double m, double c) : m(m), c(c) {}
+        Line(Point p1, Point p2) : m((p2.y - p1.y) / (p2.x - p1.x)), c(p1.y - m * p1.x) {}
         Line() : m(0.0), c(0.0) {}
+
+        double inline distance_to_point(Point p)
+        {
+            return abs(m * p.x - p.y + c) / std::sqrt(m * m + 1);
+        }
     };
 
     struct Circle

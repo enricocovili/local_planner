@@ -30,28 +30,60 @@ void AccelerationPlanner::slam_cones_cb(mmr_base::msg::Marker::SharedPtr slam_co
         }
     }
 
-    std::array<std::vector<Point>, 2> borders = generate_borders(y_cones, b_cones);
+    std::array<std::vector<Point>, 2> borders;
+    borders[YELLOW] = y_cones;
+    borders[BLUE] = b_cones;
     std::vector<Point> center_line = generate_center_line(borders);
+}
+
+Line AccelerationPlanner::ransac(std::vector<Point> points)
+{
+    Line best_line;
+    int best_num_inliers = 0;
+    for (int i = 0; i < 1000; ++i)
+    {
+        int idx1 = rand() % points.size();
+        int idx2 = rand() % points.size();
+        Point p1 = points[idx1];
+        Point p2 = points[idx2];
+        Line line(p1, p2);
+        int num_inliers = 0;
+        for (Point p : points)
+        {
+            double dist = line.distance_to_point(p);
+            if (dist < 0.1)
+            {
+                num_inliers++;
+            }
+        }
+        if (num_inliers > best_num_inliers)
+        {
+            best_num_inliers = num_inliers;
+            best_line = line;
+        }
+    }
+    return best_line;
 }
 
 std::array<std::vector<Point>, 2> AccelerationPlanner::generate_borders(std::vector<Point> y_cones, std::vector<Point> b_cones)
 {
-    // apply ransac to y_cones and b_cones
-
     std::array<std::vector<Point>, 2> borders;
-
-    
+    borders[YELLOW] = utils::discretize_line(ransac(y_cones), y_cones.front(), Point(y_cones.back().x, y_cones.back().y+m_meters_over_horizon), m_line_step);
+    borders[BLUE] = utils::discretize_line(ransac(b_cones), b_cones.front(), Point(b_cones.back().x, b_cones.back().y+m_meters_over_horizon), m_line_step);
     return borders;
 }
 
 std::vector<Point> AccelerationPlanner::generate_center_line(std::array<std::vector<Point>, 2> borders)
 {
     std::vector<Point> center_line;
-    // take medium points of borders
-    for (size_t i = 0; i < std::min(borders[BLUE].size(), borders[YELLOW].size()); ++i)
+    for (size_t i = 0; i < std::min(borders[YELLOW].size(), borders[BLUE].size()); ++i)
     {
-        center_line.push_back(Point((borders[BLUE][i].x + borders[YELLOW][i].x) / 2.0, (borders[BLUE][i].y + borders[YELLOW][i].y) / 2.0));
+        Point p1 = borders[YELLOW][i];
+        Point p2 = borders[BLUE][i];
+        Point center((p1.x + p2.x) / 2, (p1.y + p2.y) / 2);
+        center_line.push_back(center);
     }
+
     return center_line;
 }
 

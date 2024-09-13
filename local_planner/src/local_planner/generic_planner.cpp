@@ -73,4 +73,88 @@ void GenericPlanner::create_connections()
     auto slam_cones_sub = create_subscription<mmr_base::msg::Marker>(m_slam_cones_topic, 10, std::bind(&GenericPlanner::slam_cones_cb, this, std::placeholders::_1));
 }
 
+void GenericPlanner::publish_borders(std::array<std::vector<Point>, 2> borders)
+{
+    mmr_base::msg::MarkerArray msg;
+
+    for (const auto i : {YELLOW, BLUE})
+    {
+        mmr_base::msg::Marker marker;
+        marker.id = i;
+        marker.ns = "border";
+        marker.header.frame_id = "track";
+        marker.header.stamp = get_clock()->now();
+        marker.header.stamp.sec = get_clock()->now().nanoseconds() / static_cast<long int>(1e9);
+        marker.header.stamp.nanosec = get_clock()->now().nanoseconds() % static_cast<long int>(1e9);
+        marker.type = mmr_base::msg::Marker::LINE_STRIP;
+        marker.action = mmr_base::msg::Marker::ADD;
+        marker.scale.x = 0.1;
+        marker.scale.y = 0.1;
+        marker.scale.z = 0.1;
+        marker.pose.orientation.w = 1.0;
+        marker.pose.orientation.x = 0.0;
+        marker.pose.orientation.y = 0.0;
+        marker.pose.orientation.z = 0.0;
+        marker.color.a = 1.0;
+        if (i == YELLOW)
+        {
+            marker.color.r = 1.0;
+            marker.color.g = 1.0;
+            marker.color.b = 0.0;
+        }
+        else
+        {
+            marker.color.r = 0.0;
+            marker.color.g = 0.0;
+            marker.color.b = 1.0;
+        }
+
+        for (auto point : borders[i])
+        {
+            geometry_msgs::msg::Point p;
+            p.x = point.x;
+            p.y = point.y;
+            marker.points.push_back(p);
+        }
+
+        msg.markers.push_back(marker);
+    }
+
+    m_borders_pub->publish(msg);
+}
+
+void GenericPlanner::publish_center_line(std::vector<Point> center_line)
+{
+    mmr_base::msg::Marker msg;
+	msg.id = 0;
+	msg.ns = "centerLine";
+	msg.header.frame_id = "track";
+	msg.header.stamp = get_clock()->now();
+	msg.header.stamp.sec = get_clock()->now().nanoseconds() / static_cast<long int>(1e9);
+	msg.header.stamp.nanosec = get_clock()->now().nanoseconds() % static_cast<long int>(1e9);
+	msg.type = mmr_base::msg::Marker::LINE_STRIP;
+	msg.action = mmr_base::msg::Marker::ADD;
+	msg.scale.x = 0.1;
+	msg.scale.y = 0.1;
+	msg.scale.z = 0.1;
+	msg.color.a = 1.0;
+	msg.color.r = 1.0;
+	msg.color.g = 1.0;
+	msg.color.b = 1.0;
+	msg.pose.orientation.w = 1.0;
+	msg.pose.orientation.x = 0.0;
+	msg.pose.orientation.y = 0.0;
+	msg.pose.orientation.z = 0.0;
+
+    for (auto point : center_line)
+    {
+        geometry_msgs::msg::Point p;
+        p.x = point.x;
+        p.y = point.y;
+        msg.points.push_back(p);
+    }
+
+    m_centerLine_pub->publish(msg);
+}
+
 }// namespace local_planner

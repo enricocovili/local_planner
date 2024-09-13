@@ -2,7 +2,7 @@
 #define ACCELLARATION_LOCAL_PLANNER_HPP
 
 #include <local_planner/generic_planner.hpp>
-
+#include <local_planner/utils.hpp>
 
 namespace local_planning {
 
@@ -16,6 +16,8 @@ public:
     void load_params() override;
     std::array<std::vector<Point>, 2> generate_borders(std::vector<Point>, std::vector<Point>) override;
     std::vector <Point> generate_center_line(std::array<std::vector<Point>, 2>) override;
+
+    Line ransac(std::vector<Point> points);
 };
     
 } // namespace local_plannings
