@@ -6,7 +6,6 @@ namespace utils {
 
 std::shared_ptr<GenericPlanner> create_planner() 
 {
-    // read using yaml-cpp
     std::shared_ptr<GenericPlanner> planner;
 
     std::string config_file = ament_index_cpp::get_package_share_directory("local_planner") + std::string("/config/local_planner.yaml");
@@ -37,6 +36,28 @@ std::shared_ptr<GenericPlanner> create_planner()
     return planner;
 }
 
+std::vector<Point> discretize_line(double m, double q, double c, double x1, double x2, double step)
+{
+    std::vector<Point> points;
+    for (double x = x1; x <= x2; x += step)
+    {
+        double y = m * x + c;
+        points.push_back(Point(x, y));
+    }
+    return points;
+}
+
+std::vector<Point> discretize_circle(Point center, double radius, double step)
+{
+    std::vector<Point> points;
+    for (double theta = 0; theta < 2 * M_PI; theta += step)
+    {
+        double x = center.x + radius * cos(theta);
+        double y = center.y + radius * sin(theta);
+        points.push_back(Point(x, y));
+    }
+    return points;
+}
+
 } // namespace utils
 } // namespace local_planning
- 

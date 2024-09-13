@@ -2,6 +2,10 @@ local_planner:
   ros__parameters:
     generic:
       event_type: "autocross"  # Possible values: "acceleration" "autocross" "skidpad". overrided by launch file
+      line_step: 0.5 # m
+      circle_step: 0.1 # m
+      debug: true
+
       topics:
         subscribers:
           race_status: "/planning/race_status"
@@ -17,16 +21,14 @@ local_planner:
       todo: "todo"
 
     acceleration:
-      line_width: 0.1
       meters_over_horizon: 30.0
 
     skidpad:
       center_x : 15.0
       center_y : 9.125
       inner_radius : 7.625
+      outer_radius : 10.625
       max_distance_from_center: 0.5 # max dist from theoretical center
       radius_offset : 0.2 # tuned for the larger trajectory, 0.0 to revert
-      circle_points : 80
-      line_points : 30
       end_x: 100.0
       minimum_cones: 3 #minumum number of cones to start the process

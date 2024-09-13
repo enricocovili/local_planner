@@ -3,6 +3,7 @@ project(local_planner)
 
 set(CMAKE_CXX_STANDARD 20)
 add_compile_options(-Wall -Wextra -Wpedantic -O2)
+add_definitions(-w)
 
 find_package(ament_cmake REQUIRED)
 find_package(ament_index_cpp REQUIRED)
@@ -16,9 +17,9 @@ find_package(yaml-cpp REQUIRED)
 add_executable(local_planner_node
 	src/main.cpp
 	src/local_planner/generic_planner.cpp
-	src/local_planner/acceleration_planner.cpp
-	src/local_planner/skidpad_planner.cpp
-	src/local_planner/autocross_planner.cpp
+	src/local_planner/acceleration.cpp
+	src/local_planner/skidpad.cpp
+	src/local_planner/autocross.cpp
 	src/local_planner/utils.cpp
 )
 

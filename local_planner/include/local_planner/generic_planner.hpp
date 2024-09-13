@@ -8,7 +8,7 @@
 #include <mmr_base/msg/marker.hpp>
 #include "mmr_base/msg/race_status.hpp"
 
-using Point = geometry_msgs::msg::Point;
+#include "local_planner/geometry.hpp"
 
 namespace local_planning {
 
@@ -23,6 +23,11 @@ private:
     std::string m_race_status_topic;
     std::string m_odometry_topic;
     std::string m_slam_cones_topic;
+
+    double m_line_step;
+    double m_circle_step;
+
+    bool m_debug;
 
     rclcpp::Publisher<mmr_base::msg::MarkerArray>::SharedPtr m_borders_pub;
     rclcpp::Publisher<mmr_base::msg::Marker>::SharedPtr m_centerLine_pub;
@@ -44,7 +49,9 @@ public:
 
     void race_status_cb(mmr_base::msg::RaceStatus::SharedPtr race_status) {m_race_status = race_status;}
     void odometry_cb(nav_msgs::msg::Odometry::SharedPtr odometry) {m_odometry = odometry;}
-    virtual void slam_cones_cb(mmr_base::msg::Marker::SharedPtr) const {};
+    virtual void slam_cones_cb(mmr_base::msg::Marker::SharedPtr) {};
+    virtual std::array<std::vector<Point>, 2> generate_borders(std::vector<Point>, std::vector<Point>) {};
+    virtual std::vector<Point> generate_center_line(std::array<std::vector<Point>, 2>) {};
 };
 
 } // namespace local_planning
