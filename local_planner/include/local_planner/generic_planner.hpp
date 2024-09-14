@@ -43,6 +43,7 @@ protected:
     double m_circle_step;
     
     bool m_debug;
+    bool m_idle;
 
 public:
     GenericPlanner();
@@ -55,8 +56,8 @@ public:
     void race_status_cb(mmr_base::msg::RaceStatus::SharedPtr race_status) {m_race_status = race_status;}
     void odometry_cb(nav_msgs::msg::Odometry::SharedPtr odometry) {m_odometry = odometry;}
 
-    void publish_borders(std::array<std::vector<Point>, 2>);
-    void publish_center_line(std::vector<Point>);
+    void publish_borders(std::array<std::vector<Point>, 2>, bool=false);
+    void publish_center_line(std::vector<Point>, bool=false);
     void publish_borders_completed(std::array<std::vector<Point>, 2>);
     void publish_center_line_completed(std::vector<Point>);
 

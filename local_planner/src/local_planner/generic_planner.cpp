@@ -63,11 +63,14 @@ void GenericPlanner::load_generic_params()
 
 void GenericPlanner::create_connections()
 {
+    // transient local qos
+    auto transient_local_qos = rclcpp::QoS(rclcpp::KeepLast(10)).transient_local();
+    
     // publishers
     m_borders_pub = this->create_publisher<mmr_base::msg::MarkerArray>(m_borders_topic, 10);
     m_centerLine_pub = this->create_publisher<mmr_base::msg::Marker>(m_centerLine_topic, 10);
-    m_borders_completed_pub = this->create_publisher<mmr_base::msg::MarkerArray>(m_borders_completed_topic, 10);
-    m_centerLine_completed_pub = this->create_publisher<mmr_base::msg::Marker>(m_centerLine_completed_topic, 10);
+    m_borders_completed_pub = this->create_publisher<mmr_base::msg::MarkerArray>(m_borders_completed_topic, transient_local_qos);
+    m_centerLine_completed_pub = this->create_publisher<mmr_base::msg::Marker>(m_centerLine_completed_topic, transient_local_qos);
 
     // subscribers
     m_odometry_sub = create_subscription<nav_msgs::msg::Odometry>(m_odometry_topic, 10, std::bind(&GenericPlanner::odometry_cb, this, std::placeholders::_1));
@@ -75,7 +78,7 @@ void GenericPlanner::create_connections()
     m_slam_cones_sub = create_subscription<mmr_base::msg::Marker>(m_slam_cones_topic, 10, std::bind(&GenericPlanner::slam_cones_cb, this, std::placeholders::_1));
 }
 
-void GenericPlanner::publish_borders(std::array<std::vector<Point>, 2> borders)
+void GenericPlanner::publish_borders(std::array<std::vector<Point>, 2> borders, bool is_complete)
 {
     mmr_base::msg::MarkerArray msg;
 
@@ -122,10 +125,17 @@ void GenericPlanner::publish_borders(std::array<std::vector<Point>, 2> borders)
         msg.markers.push_back(marker);
     }
 
-    m_borders_pub->publish(msg);
+    if (is_complete)
+    {
+        m_borders_completed_pub->publish(msg);
+    }
+    else
+    {
+        m_borders_pub->publish(msg);
+    }
 }
 
-void GenericPlanner::publish_center_line(std::vector<Point> center_line)
+void GenericPlanner::publish_center_line(std::vector<Point> center_line, bool is_complete)
 {
     mmr_base::msg::Marker msg;
 	msg.id = 0;
@@ -156,7 +166,25 @@ void GenericPlanner::publish_center_line(std::vector<Point> center_line)
         msg.points.push_back(p);
     }
 
-    m_centerLine_pub->publish(msg);
+    if (is_complete)
+    {
+        m_centerLine_completed_pub->publish(msg);
+    }
+    else
+    {
+        m_centerLine_pub->publish(msg);
+    }
+
+}
+
+void GenericPlanner::publish_borders_completed(std::array<std::vector<Point>, 2> borders)
+{
+    publish_borders(borders, true);
+}
+
+void GenericPlanner::publish_center_line_completed(std::vector<Point> center_line)
+{
+    publish_center_line(center_line, true);
 }
 
 }// namespace local_planner
