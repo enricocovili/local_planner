@@ -53,3 +53,4 @@ qtcreator-*
 CATKIN_IGNORE
 
 mmr_base/
+.vscode
