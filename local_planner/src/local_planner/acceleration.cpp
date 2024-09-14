@@ -11,8 +11,11 @@ AccelerationPlanner::AccelerationPlanner() : GenericPlanner()
 void AccelerationPlanner::load_params()
 {
     declare_parameter("acceleration.meters_over_horizon", 0.0);
-    get_parameter("acceleration.meters_over_horizon", m_meters_over_horizon);
+    declare_parameter("acceleration.safe_slope", 0.0);
 
+    get_parameter("acceleration.meters_over_horizon", m_meters_over_horizon);
+    get_parameter("acceleration.safe_slope", m_safe_slope);
+    
     if (m_debug)
     {
         RCLCPP_INFO(get_logger(), "AccelerationPlanner parameters:");
@@ -22,6 +25,10 @@ void AccelerationPlanner::load_params()
 
 void AccelerationPlanner::slam_cones_cb(mmr_base::msg::Marker::SharedPtr slam_cones)
 {
+    if (m_idle)
+    {
+        return;
+    }
     std::vector<Point> y_cones;
     std::vector<Point> b_cones;
 
@@ -37,48 +44,59 @@ void AccelerationPlanner::slam_cones_cb(mmr_base::msg::Marker::SharedPtr slam_co
         }
     }
 
-    std::array<std::vector<Point>, 2> borders;
-    borders[YELLOW] = y_cones;
-    borders[BLUE] = b_cones;
+    std::array<std::vector<Point>, 2> borders = generate_borders(y_cones, b_cones);
     std::vector<Point> center_line = generate_center_line(borders);
-    publish_borders(borders);
-    publish_center_line(center_line);
+
+    if (std::abs(Line(center_line.front(), center_line.back()).m) < m_safe_slope)
+    {
+        publish_center_line_completed(center_line);
+        publish_borders_completed(borders);
+        m_idle = true;
+    }
+    else
+    {
+        publish_center_line(center_line);
+        publish_borders(borders);
+    }
 }
 
-Line AccelerationPlanner::ransac(std::vector<Point> points)
+// @brief: Least squares method to fit a line to a set of points
+// @param: points: vector of points to fit the line to
+// @return: Line object representing the best fit line
+Line AccelerationPlanner::best_fit_line(std::vector<Point> points)
 {
-    Line best_line;
-    int best_num_inliers = 0;
-    for (int i = 0; i < 1000; ++i)
-    {
-        int idx1 = rand() % points.size();
-        int idx2 = rand() % points.size();
-        Point p1 = points[idx1];
-        Point p2 = points[idx2];
-        Line line(p1, p2);
-        int num_inliers = 0;
-        for (Point p : points)
-        {
-            double dist = line.distance_to_point(p);
-            if (dist < 0.1)
-            {
-                num_inliers++;
-            }
-        }
-        if (num_inliers > best_num_inliers)
-        {
-            best_num_inliers = num_inliers;
-            best_line = line;
-        }
+    size_t n = points.size();
+    double sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0;
+    
+    // Compute the necessary summations
+    for (const auto& point : points) {
+        sumX += point.x;
+        sumY += point.y;
+        sumXY += point.x * point.y;
+        sumX2 += point.x * point.x;
     }
-    return best_line;
+    
+    // Compute the slope (m) and intercept (c)
+    double m = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
+    double c = (sumY * sumX2 - sumX * sumXY) / (n * sumX2 - sumX * sumX);
+    return Line(m, c);
 }
 
 std::array<std::vector<Point>, 2> AccelerationPlanner::generate_borders(std::vector<Point> y_cones, std::vector<Point> b_cones)
 {
     std::array<std::vector<Point>, 2> borders;
-    borders[YELLOW] = utils::discretize_line(ransac(y_cones), y_cones.front(), Point(y_cones.back().x, y_cones.back().y+m_meters_over_horizon), m_line_step);
-    borders[BLUE] = utils::discretize_line(ransac(b_cones), b_cones.front(), Point(b_cones.back().x, b_cones.back().y+m_meters_over_horizon), m_line_step);
+
+    Line best_y_line = best_fit_line(y_cones);
+    borders[YELLOW] = utils::discretize_line(best_y_line, Point(0, best_y_line.y(0)), Point(m_meters_over_horizon, best_y_line.y(m_meters_over_horizon)), m_line_step);
+    
+    Line best_b_line = best_fit_line(b_cones);
+    borders[BLUE] = utils::discretize_line(best_b_line, Point(0, best_b_line.y(0)), Point(m_meters_over_horizon, best_b_line.y(m_meters_over_horizon)), m_line_step);
+    
+    if (m_debug)
+    {
+        RCLCPP_INFO(get_logger(), "Yellow line: y = %fx + %f", best_y_line.m, best_y_line.c);
+        RCLCPP_INFO(get_logger(), "Blue line: y = %fx + %f", best_b_line.m, best_b_line.c);
+    }
     return borders;
 }
 

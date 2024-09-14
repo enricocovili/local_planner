@@ -34,6 +34,11 @@ namespace local_planning
         {
             return abs(m * p.x - p.y + c) / std::sqrt(m * m + 1);
         }
+
+        double inline y(double x)
+        {
+            return m * x + c;
+        }
     };
 
     struct Circle

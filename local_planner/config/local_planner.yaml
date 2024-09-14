@@ -22,6 +22,7 @@ local_planner:
 
     acceleration:
       meters_over_horizon: 150.0
+      safe_slope: 0.1 # if the slope is lower, we publish center_line_completed and we stop the node
 
     skidpad:
       center_x : 15.0

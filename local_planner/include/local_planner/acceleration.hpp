@@ -10,6 +10,7 @@ class AccelerationPlanner : public GenericPlanner
 {
 private:
     double m_meters_over_horizon;
+    double m_safe_slope;
 public:
     AccelerationPlanner();
     void slam_cones_cb(mmr_base::msg::Marker::SharedPtr) override;
@@ -17,7 +18,7 @@ public:
     std::array<std::vector<Point>, 2> generate_borders(std::vector<Point>, std::vector<Point>) override;
     std::vector <Point> generate_center_line(std::array<std::vector<Point>, 2>) override;
 
-    Line ransac(std::vector<Point> points);
+    Line best_fit_line(std::vector<Point> points);
 };
     
 } // namespace local_plannings
