@@ -29,8 +29,11 @@ private:
     rclcpp::Publisher<mmr_base::msg::MarkerArray>::SharedPtr m_borders_completed_pub;
     rclcpp::Publisher<mmr_base::msg::Marker>::SharedPtr m_centerLine_completed_pub;
 
+    rclcpp::Subscription<mmr_base::msg::RaceStatus>::SharedPtr m_race_status_sub;
     mmr_base::msg::RaceStatus::SharedPtr m_race_status;
+    rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr m_odometry_sub;
     nav_msgs::msg::Odometry::SharedPtr m_odometry;
+    rclcpp::Subscription<mmr_base::msg::Marker>::SharedPtr m_slam_cones_sub;
 
     rclcpp::Logger m_logger = this->get_logger();
     rclcpp::TimerBase::SharedPtr m_timer;
@@ -45,8 +48,9 @@ public:
     GenericPlanner();
     virtual ~GenericPlanner() = default;
     void init();
-    virtual void load_params();
+    void load_generic_params();
     void create_connections(); // setup subs, pubs and callbacks
+    virtual void load_params() = 0;
 
     void race_status_cb(mmr_base::msg::RaceStatus::SharedPtr race_status) {m_race_status = race_status;}
     void odometry_cb(nav_msgs::msg::Odometry::SharedPtr odometry) {m_odometry = odometry;}

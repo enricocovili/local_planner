@@ -6,17 +6,15 @@ namespace local_planning {
 
 GenericPlanner::GenericPlanner() : rclcpp::Node("local_planner")
 {
-    m_timer = create_wall_timer(std::chrono::milliseconds(100), std::bind(&GenericPlanner::init, this));
+    load_generic_params();
 }
 
 void GenericPlanner::init()
 {
-    load_params();
     create_connections();
-    m_timer->cancel();
 }
 
-void GenericPlanner::load_params()
+void GenericPlanner::load_generic_params()
 {
     // TOPICS
     declare_parameter<std::string>("generic.topics.publishers.borders", "");
@@ -46,6 +44,8 @@ void GenericPlanner::load_params()
     get_parameter("generic.circle_step", m_circle_step);
     get_parameter("generic.debug", m_debug);
 
+    RCLCPP_INFO(m_logger, "debug mode: %s", m_debug ? "true" : "false");
+
     if (m_debug)
     {
         RCLCPP_INFO(m_logger, "Generic parameters:");
@@ -56,6 +56,8 @@ void GenericPlanner::load_params()
         RCLCPP_INFO(m_logger, "Odometry topic: %s", m_odometry_topic.c_str());
         RCLCPP_INFO(m_logger, "Race Status topic: %s", m_race_status_topic.c_str());
         RCLCPP_INFO(m_logger, "SLAM Cones topic: %s", m_slam_cones_topic.c_str());
+        // log 20 dashes
+        RCLCPP_INFO(m_logger, std::string(30, '-').c_str());
     }
 }
 
@@ -68,9 +70,9 @@ void GenericPlanner::create_connections()
     m_centerLine_completed_pub = this->create_publisher<mmr_base::msg::Marker>(m_centerLine_completed_topic, 10);
 
     // subscribers
-    auto odometry_sub = create_subscription<nav_msgs::msg::Odometry>(m_odometry_topic, 10, std::bind(&GenericPlanner::odometry_cb, this, std::placeholders::_1));
-    auto race_status_sub = create_subscription<mmr_base::msg::RaceStatus>(m_race_status_topic, 10, std::bind(&GenericPlanner::race_status_cb, this, std::placeholders::_1));
-    auto slam_cones_sub = create_subscription<mmr_base::msg::Marker>(m_slam_cones_topic, 10, std::bind(&GenericPlanner::slam_cones_cb, this, std::placeholders::_1));
+    m_odometry_sub = create_subscription<nav_msgs::msg::Odometry>(m_odometry_topic, 10, std::bind(&GenericPlanner::odometry_cb, this, std::placeholders::_1));
+    m_race_status_sub = create_subscription<mmr_base::msg::RaceStatus>(m_race_status_topic, 10, std::bind(&GenericPlanner::race_status_cb, this, std::placeholders::_1));
+    m_slam_cones_sub = create_subscription<mmr_base::msg::Marker>(m_slam_cones_topic, 10, std::bind(&GenericPlanner::slam_cones_cb, this, std::placeholders::_1));
 }
 
 void GenericPlanner::publish_borders(std::array<std::vector<Point>, 2> borders)

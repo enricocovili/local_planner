@@ -5,13 +5,17 @@
 #include "local_planner/skidpad.hpp"
 #include "local_planner/autocross.hpp"
 
-std::shared_ptr<local_planning::GenericPlanner> create_planner()
+std::shared_ptr<local_planning::GenericPlanner> create_planner(std::string event_type)
 {
     std::shared_ptr<local_planning::GenericPlanner> planner;
 
-    std::string config_file = ament_index_cpp::get_package_share_directory("local_planner") + std::string("/config/local_planner.yaml");
-    YAML::Node config = YAML::LoadFile(config_file.c_str());
-    std::string event_type = config["local_planner"]["ros__parameters"]["generic"]["event_type"].as<std::string>();
+    if (event_type.empty())
+    {
+      RCLCPP_INFO(rclcpp::get_logger("main"), "No event type specified, loading from config file");
+      std::string config_file = ament_index_cpp::get_package_share_directory("local_planner") + std::string("/config/local_planner.yaml");
+      YAML::Node config = YAML::LoadFile(config_file.c_str());
+      event_type = config["local_planner"]["ros__parameters"]["generic"]["event_type"].as<std::string>();
+    }
 
     RCLCPP_INFO(rclcpp::get_logger("main"), "Instantiating planner: %s", event_type.c_str());
 
@@ -34,6 +38,8 @@ std::shared_ptr<local_planning::GenericPlanner> create_planner()
         throw;
     }
 
+    planner->init();
+
     return planner;
 }
 
@@ -41,10 +47,18 @@ int main(int argc, char * argv[])
 {
   rclcpp::init(argc, argv);
   try {
-    auto planner = create_planner();
-    // auto planner = std::make_shared<local_planning::GenericPlanner>();
+
+    auto launcher = rclcpp::Node("__event_loader");
+
+    std::string event_type;
+    launcher.declare_parameter<std::string>("event_type", "");
+    launcher.get_parameter("event_type", event_type);
+
+    auto planner = create_planner(event_type);
+
     rclcpp::spin(planner);
     rclcpp::shutdown();
+
   } catch (const std::exception& e) {
     RCLCPP_FATAL(rclcpp::get_logger("main"), "Terminating due to exception of type '%s' - what(): %s", typeid(e).name(), e.what());
     rclcpp::shutdown();

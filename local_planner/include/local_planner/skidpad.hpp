@@ -19,7 +19,7 @@ private:
 public:
     SkidpadPlanner();
     void slam_cones_cb(mmr_base::msg::Marker::SharedPtr) override;
-    void load_params() override;
+    void load_params();
     std::array<std::vector<Point>, 2> generate_borders(std::vector<Point>, std::vector<Point>) override;
     std::vector <Point> generate_center_line(std::array<std::vector<Point>, 2>) override;
 };

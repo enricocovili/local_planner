@@ -5,12 +5,19 @@ namespace local_planning {
 AccelerationPlanner::AccelerationPlanner() : GenericPlanner()
 {
     load_params();
+    create_connections();
 }
 
 void AccelerationPlanner::load_params()
 {
     declare_parameter("acceleration.meters_over_horizon", 0.0);
     get_parameter("acceleration.meters_over_horizon", m_meters_over_horizon);
+
+    if (m_debug)
+    {
+        RCLCPP_INFO(get_logger(), "AccelerationPlanner parameters:");
+        RCLCPP_INFO(get_logger(), "meters_over_horizon: %f", m_meters_over_horizon);
+    }
 }
 
 void AccelerationPlanner::slam_cones_cb(mmr_base::msg::Marker::SharedPtr slam_cones)
@@ -34,6 +41,8 @@ void AccelerationPlanner::slam_cones_cb(mmr_base::msg::Marker::SharedPtr slam_co
     borders[YELLOW] = y_cones;
     borders[BLUE] = b_cones;
     std::vector<Point> center_line = generate_center_line(borders);
+    publish_borders(borders);
+    publish_center_line(center_line);
 }
 
 Line AccelerationPlanner::ransac(std::vector<Point> points)
