@@ -42,6 +42,11 @@ void SkidpadPlanner::load_params()
 
 void SkidpadPlanner::slam_cones_cb(mmr_base::msg::Marker::SharedPtr slam_cones)
 {
+    if (this->m_idle)
+    {
+        return;
+    }
+
     std::array<std::vector<Point>, 2> left_cones;
     std::array<std::vector<Point>, 2> right_cones;
 
@@ -91,8 +96,12 @@ void SkidpadPlanner::slam_cones_cb(mmr_base::msg::Marker::SharedPtr slam_cones)
     Circle inner_right = Circle(outer_right.center, m_inner_radius);
     
     publish_borders(generate_borders(discretize_circle(outer_left, m_circle_step, LEFT), discretize_circle(outer_right, m_circle_step, RIGHT)));
-    
+    publish_borders_completed(generate_borders(discretize_circle(inner_left, m_circle_step, LEFT), discretize_circle(inner_right, m_circle_step, RIGHT)));
+
     publish_center_line(generate_center_line({outer_left, outer_right}));
+    publish_center_line_completed(generate_center_line({outer_left, outer_right}));
+
+    this->m_idle = true;
 }
 
 Circle SkidpadPlanner::best_circle(std::vector<Point> points, Side side)
