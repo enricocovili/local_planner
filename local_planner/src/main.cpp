@@ -1,9 +1,13 @@
 #include <typeinfo>
+#include <yaml-cpp/yaml.h>
+#include <ament_index_cpp/get_package_share_directory.hpp>
 
 #include "local_planner/generic_planner.hpp"
 #include "local_planner/acceleration.hpp"
 #include "local_planner/skidpad.hpp"
 #include "local_planner/autocross.hpp"
+
+
 
 std::shared_ptr<local_planning::GenericPlanner> create_planner(std::string event_type)
 {
@@ -33,7 +37,7 @@ std::shared_ptr<local_planning::GenericPlanner> create_planner(std::string event
     }
     else
     {
-        RCLCPP_ERROR(rclcpp::get_logger("main"), "Invalid event type: %s", event_type);
+        RCLCPP_ERROR(rclcpp::get_logger("main"), "Invalid event type: %s", event_type.c_str());
         rclcpp::shutdown();
         throw;
     }
