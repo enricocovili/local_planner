@@ -2,13 +2,22 @@
 #define GEOMETRY_LOCAL_PLANNER_HPP
 
 #include <geometry_msgs/msg/point.hpp>
+#include <cmath>
 
 namespace local_planning
+{
+namespace geometry
 {
     enum ConeColor
     {
         YELLOW,
         BLUE
+    };
+
+    enum Side
+    {
+        LEFT,
+        RIGHT
     };
 
     struct Point
@@ -49,6 +58,11 @@ namespace local_planning
         Circle(Point center, double radius) : center(center), radius(radius) {}
         Circle() : center(Point()), radius(0.0) {}
     };
-} // namespace local_planning
 
+    std::vector<Point> discretize_line(Line line, Point start, Point end, double step);
+    std::vector<Point> discretize_circle(Circle circle, double step, Side side);
+    double inline distance(Point p1, Point p2) { return std::sqrt(std::pow(p1.x - p2.x, 2) + std::pow(p1.y - p2.y, 2)); }
+
+} // namespace geometry
+} // namespace local_planning
 #endif // GEOMETRY_LOCAL_PLANNER_HPP

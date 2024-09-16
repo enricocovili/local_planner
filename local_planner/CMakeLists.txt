@@ -16,11 +16,11 @@ find_package(yaml-cpp REQUIRED)
 
 add_executable(local_planner_node
 	src/main.cpp
+	src/local_planner/geometry.cpp
 	src/local_planner/generic_planner.cpp
 	src/local_planner/acceleration.cpp
 	src/local_planner/skidpad.cpp
 	src/local_planner/autocross.cpp
-	src/local_planner/utils.cpp
 )
 
 target_include_directories(local_planner_node PUBLIC include)

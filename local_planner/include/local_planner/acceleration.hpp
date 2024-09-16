@@ -2,9 +2,12 @@
 #define ACCELLARATION_LOCAL_PLANNER_HPP
 
 #include <local_planner/generic_planner.hpp>
-#include <local_planner/utils.hpp>
+#include <local_planner/geometry.hpp>
+
 
 namespace local_planning {
+
+using namespace geometry;
 
 class AccelerationPlanner : public GenericPlanner
 {

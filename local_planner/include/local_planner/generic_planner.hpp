@@ -12,6 +12,8 @@
 
 namespace local_planning {
 
+using namespace geometry;
+
 class GenericPlanner : public rclcpp::Node
 {
 private:

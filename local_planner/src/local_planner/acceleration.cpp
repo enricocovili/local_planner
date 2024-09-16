@@ -87,10 +87,10 @@ std::array<std::vector<Point>, 2> AccelerationPlanner::generate_borders(std::vec
     std::array<std::vector<Point>, 2> borders;
 
     Line best_y_line = best_fit_line(y_cones);
-    borders[YELLOW] = utils::discretize_line(best_y_line, Point(0, best_y_line.y(0)), Point(m_meters_over_horizon, best_y_line.y(m_meters_over_horizon)), m_line_step);
+    borders[YELLOW] = geometry::discretize_line(best_y_line, Point(0, best_y_line.y(0)), Point(m_meters_over_horizon, best_y_line.y(m_meters_over_horizon)), m_line_step);
     
     Line best_b_line = best_fit_line(b_cones);
-    borders[BLUE] = utils::discretize_line(best_b_line, Point(0, best_b_line.y(0)), Point(m_meters_over_horizon, best_b_line.y(m_meters_over_horizon)), m_line_step);
+    borders[BLUE] = geometry::discretize_line(best_b_line, Point(0, best_b_line.y(0)), Point(m_meters_over_horizon, best_b_line.y(m_meters_over_horizon)), m_line_step);
     
     if (m_debug)
     {
