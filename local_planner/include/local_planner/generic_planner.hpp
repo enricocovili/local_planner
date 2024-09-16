@@ -32,15 +32,16 @@ private:
     rclcpp::Publisher<mmr_base::msg::Marker>::SharedPtr m_centerLine_completed_pub;
 
     rclcpp::Subscription<mmr_base::msg::RaceStatus>::SharedPtr m_race_status_sub;
-    mmr_base::msg::RaceStatus::SharedPtr m_race_status;
     rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr m_odometry_sub;
-    nav_msgs::msg::Odometry::SharedPtr m_odometry;
     rclcpp::Subscription<mmr_base::msg::Marker>::SharedPtr m_slam_cones_sub;
 
     rclcpp::Logger m_logger = this->get_logger();
     rclcpp::TimerBase::SharedPtr m_timer;
 
 protected:
+    mmr_base::msg::RaceStatus::SharedPtr m_race_status;
+    nav_msgs::msg::Odometry::SharedPtr m_odometry;
+
     double m_line_step;
     double m_circle_step;
     
