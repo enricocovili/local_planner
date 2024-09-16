@@ -6,6 +6,7 @@ namespace local_planning {
 
 GenericPlanner::GenericPlanner() : rclcpp::Node("local_planner")
 {
+    m_idle = false;
     load_generic_params();
 }
 
@@ -26,7 +27,7 @@ void GenericPlanner::load_generic_params()
     declare_parameter<std::string>("generic.topics.subscribers.race_status", "");
     declare_parameter<std::string>("generic.topics.subscribers.slam_cones", "");
 
-    get_parameter("generic.topics.publishers.borders", this->m_borders_topic);
+    get_parameter("generic.topics.publishers.borders", m_borders_topic);
     get_parameter("generic.topics.publishers.center_line", m_centerLine_topic);
     get_parameter("generic.topics.publishers.borders_completed", m_borders_completed_topic);
     get_parameter("generic.topics.publishers.center_line_completed", m_centerLine_completed_topic);

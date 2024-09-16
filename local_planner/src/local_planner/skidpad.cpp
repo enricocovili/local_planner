@@ -42,7 +42,7 @@ void SkidpadPlanner::load_params()
 
 void SkidpadPlanner::slam_cones_cb(mmr_base::msg::Marker::SharedPtr slam_cones)
 {
-    if (this->m_idle)
+    if (m_idle)
     {
         return;
     }

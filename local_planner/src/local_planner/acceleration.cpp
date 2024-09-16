@@ -5,7 +5,6 @@ namespace local_planning {
 AccelerationPlanner::AccelerationPlanner() : GenericPlanner()
 {
     load_params();
-    create_connections();
 }
 
 void AccelerationPlanner::load_params()

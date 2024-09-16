@@ -62,6 +62,8 @@ namespace geometry
     std::vector<Point> discretize_line(Line line, Point start, Point end, double step);
     std::vector<Point> discretize_circle(Circle circle, double step, Side side);
     double inline distance(Point p1, Point p2) { return std::sqrt(std::pow(p1.x - p2.x, 2) + std::pow(p1.y - p2.y, 2)); }
+    double inline deg_to_rad(double deg) { return deg * M_PI / 180; }
+    double inline rad_to_deg(double rad) { return rad * 180 / M_PI; }
 
 } // namespace geometry
 } // namespace local_planning
