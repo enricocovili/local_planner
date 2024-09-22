@@ -78,13 +78,13 @@ void SkidpadPlanner::slam_cones_cb(mmr_base::msg::Marker::SharedPtr slam_cones)
     outer_left.radius = m_outer_radius;
     outer_right.radius = m_outer_radius;
 
-    if (distance(outer_left.center, Point(m_center_x, m_center_y)) > m_max_distance_from_center ||
-        distance(outer_right.center, Point(m_center_x, -m_center_y)) > m_max_distance_from_center)
+    if (point_distance(outer_left.center, Point(m_center_x, m_center_y)) > m_max_distance_from_center ||
+        point_distance(outer_right.center, Point(m_center_x, -m_center_y)) > m_max_distance_from_center)
     {
         if (m_debug)
         {
             RCLCPP_INFO(get_logger(), "Circles not found or too far from center");
-            RCLCPP_INFO(get_logger(), "Distances: %f, %f", distance(outer_left.center, Point(m_center_x, m_center_y)), distance(outer_right.center, Point(m_center_x, -m_center_y)));
+            RCLCPP_INFO(get_logger(), "Distances: %f, %f", point_distance(outer_left.center, Point(m_center_x, m_center_y)), point_distance(outer_right.center, Point(m_center_x, -m_center_y)));
         }
         return;
     }
@@ -124,7 +124,7 @@ Circle SkidpadPlanner::best_circle(std::vector<Point> points, Side side)
                     {
                         continue;
                     }
-                    if (distance(circle.center, Point(m_center_x, m_center_y)) < distance(result_circle.center, Point(m_center_x, m_center_y)))
+                    if (point_distance(circle.center, Point(m_center_x, m_center_y)) < point_distance(result_circle.center, Point(m_center_x, m_center_y)))
                     {
                         result_circle = circle;
                     }
@@ -138,7 +138,7 @@ Circle SkidpadPlanner::best_circle(std::vector<Point> points, Side side)
                     {
                         continue;
                     }
-                    if (distance(circle.center, Point(m_center_x, -m_center_y)) < distance(result_circle.center, Point(m_center_x, -m_center_y)))
+                    if (point_distance(circle.center, Point(m_center_x, -m_center_y)) < point_distance(result_circle.center, Point(m_center_x, -m_center_y)))
                     {
                         result_circle = circle;
                     }

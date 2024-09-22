@@ -48,5 +48,15 @@ std::vector<Point> discretize_circle(Circle circle, double step, Side side)
     return points;
 }
 
+double path_length(const std::vector<Point> &path)
+{
+	double length = 0.0;
+	for (size_t i = 1; i < path.size(); i++)
+	{
+		length += point_distance(path[i - 1], path[i]);
+	}
+	return length;
+}
+
 } // namespace geometry
 } // namespace local_planning

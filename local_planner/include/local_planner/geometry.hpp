@@ -28,6 +28,11 @@ namespace geometry
         Point(double x, double y) : x(x), y(y) {}
         Point(geometry_msgs::msg::Point point) : x(point.x), y(point.y) {}
         Point() : x(0.0), y(0.0) {}
+
+        const inline bool operator==(const Point &p) const
+        {
+            return x == p.x && y == p.y;
+        }
     };
 
     struct Line
@@ -57,11 +62,18 @@ namespace geometry
 
         Circle(Point center, double radius) : center(center), radius(radius) {}
         Circle() : center(Point()), radius(0.0) {}
+
+        const inline bool operator==(const Circle &c) const
+        {
+            return center.x == c.center.x && center.y == c.center.y && radius == c.radius;
+        }
     };
 
     std::vector<Point> discretize_line(Line line, Point start, Point end, double step);
     std::vector<Point> discretize_circle(Circle circle, double step, Side side);
-    double inline distance(Point p1, Point p2) { return std::sqrt(std::pow(p1.x - p2.x, 2) + std::pow(p1.y - p2.y, 2)); }
+    double path_length(const std::vector<Point> &path);
+
+    double inline point_distance(Point p1, Point p2) { return std::sqrt(std::pow(p1.x - p2.x, 2) + std::pow(p1.y - p2.y, 2)); }
     double inline deg_to_rad(double deg) { return deg * M_PI / 180; }
     double inline rad_to_deg(double rad) { return rad * 180 / M_PI; }
 
