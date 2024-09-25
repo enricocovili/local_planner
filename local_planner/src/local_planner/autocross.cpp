@@ -166,30 +166,49 @@ void AutocrossPlanner::debug_search_area(Point origin, double direction) {
 std::vector<Point> AutocrossPlanner::generate_center_line(std::array<std::vector<Point>, 2> borders)
 {
     std::vector<Point> center_line;
-    center_line.push_back(Point(m_odometry->pose.pose.position));
-    // get the front point of the car
+
     Point front_point = m_odometry->pose.pose.position;
+    center_line.push_back(front_point);
+
     double current_angle = get_car_direction();
     Point y_point, b_point;
-    debug_search_area(front_point, current_angle);
-    for (size_t i = 0; i < 10 && path_length(center_line) <= 10.0; ++i)
+    // debug_search_area(front_point, current_angle);
+    for (size_t i = 0; i < 1; ++i)
     {
-        y_point = get_front_point(front_point, current_angle, borders[YELLOW], m_search_angle);
-        b_point = get_front_point(front_point, current_angle, borders[BLUE], m_search_angle);
-        if (y_point == Point() || b_point == Point())
+        // project a point 1 m in every with 10 angle steps from m_search_angle/2 to -m_search_angle/2
+        double min_distance = std::numeric_limits<double>::max();
+        for (double angle = current_angle + m_search_angle/2; angle >= current_angle - m_search_angle/2; angle -= m_search_angle/10)
         {
-            if (front_point == m_odometry->pose.pose.position)
+            Point p(front_point.x + 3 * cos(angle), front_point.y + 3 * sin(angle));
+            double pair_distance = std::numeric_limits<double>::max();
+            double b_distance = std::numeric_limits<double>::max();
+            double y_distance = std::numeric_limits<double>::max();
+            // get blue point closest to p
+            for (auto b_p : borders[BLUE])
             {
-                RCLCPP_WARN(get_logger(), "No point in front of the car was found");
-                return center_line;
+                double tmp_distance = point_distance(p, b_p);
+                if (tmp_distance < b_distance)
+                {
+                    b_point = b_p;
+                    b_distance = tmp_distance;
+                }
             }
-            return center_line;
+            for (auto y_p : borders[YELLOW])
+            {
+                double tmp_distance = point_distance(p, y_p);
+                if (tmp_distance < y_distance)
+                {
+                    y_point = y_p;
+                    y_distance = tmp_distance;
+                }
+            }
+            pair_distance = abs(point_distance(p, b_point) - point_distance(p, y_point));
+            if (pair_distance < min_distance)
+            {
+                min_distance = pair_distance;
+                front_point = Point((b_point.x + y_point.x) / 2, (b_point.y + y_point.y) / 2);
+            }
         }
-        borders[YELLOW].erase(std::remove(borders[YELLOW].begin(), borders[YELLOW].end(), y_point), borders[YELLOW].end());
-        borders[BLUE].erase(std::remove(borders[BLUE].begin(), borders[BLUE].end(), b_point), borders[BLUE].end());
-        Point next_front_point = Point((y_point.x + b_point.x) / 2, (y_point.y + b_point.y) / 2);
-        current_angle = atan2(next_front_point.y - front_point.y, next_front_point.x - front_point.x);
-        front_point = next_front_point;
         center_line.push_back(front_point);
     }
     // repeat the process starting from the front point and using the new angle
