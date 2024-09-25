@@ -56,6 +56,12 @@ void AutocrossPlanner::slam_cones_cb(mmr_base::msg::Marker::SharedPtr slam_cones
         }
     }
 
+    if (cones[YELLOW].size() < 2 || cones[BLUE].size() < 2)
+    {
+        RCLCPP_WARN(get_logger(), "Not enough cones detected");
+        return;
+    }
+
     // std::array<std::vector<Point>, 2> borders = generate_borders(cones[YELLOW], cones[BLUE]);
 
     std::vector<Point> center_line = generate_center_line(cones);
@@ -131,24 +137,26 @@ void AutocrossPlanner::debug_search_area(Point origin, double direction) {
 	msg.pose.orientation.z = 0.0;
 
     // create a line and circle that represents the search area
-    std::vector<Point> center_line;
-    Point left_point = Point(origin.x + m_search_distance * cos(direction + m_search_angle/2),
-                             origin.y + m_search_distance * sin(direction + m_search_angle/2));
+    std::vector<Point> debug_area;
 
-    Point right_point = Point(origin.x + m_search_distance * cos(direction - m_search_angle/2),
-                              origin.y + m_search_distance * sin(direction - m_search_angle/2));
+    // create a partial circle, from -search_angle/2 to search_angle/2 with a radius of m_search_distance around the origin
+    std::vector<Point> search_circle;
+    for (double angle = direction - m_search_angle/2; angle <= direction + m_search_angle/2; angle += 0.1)
+    {
+        search_circle.push_back(Point(origin.x + m_search_distance * cos(angle), origin.y + m_search_distance * sin(angle)));
+    }
 
-    std::vector<Point> search_circle = discretize_circle(Circle(Point(origin), m_search_distance), m_circle_step, LEFT);
+    debug_area.push_back(m_odometry->pose.pose.position);
+    // debug_area.push_back(left_point);
+    debug_area.insert(debug_area.end(), search_circle.begin(), search_circle.end());
+    // debug_area.push_back(right_point);
+    debug_area.push_back(m_odometry->pose.pose.position);
 
-    center_line.push_back(left_point);
-    center_line.push_back(right_point);
-    center_line.insert(center_line.end(), search_circle.begin(), search_circle.end());
-
-    for (size_t i = 0; i < center_line.size(); i++)
+    for (size_t i = 0; i < debug_area.size(); i++)
     {
         geometry_msgs::msg::Point p;
-        p.x = center_line[i].x;
-        p.y = center_line[i].y;
+        p.x = debug_area[i].x;
+        p.y = debug_area[i].y;
         msg.points.push_back(p);
     }
 
