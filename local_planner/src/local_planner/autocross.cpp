@@ -62,13 +62,9 @@ void AutocrossPlanner::slam_cones_cb(mmr_base::msg::Marker::SharedPtr slam_cones
         return;
     }
 
-    // std::array<std::vector<Point>, 2> borders = generate_borders(cones[YELLOW], cones[BLUE]);
-
     std::vector<Point> center_line = generate_center_line(cones);
 
-
-    // publish_borders(cones);
-    if (center_line.size() == 1)
+    if (center_line.size() < 2) // only the odometry point
     {
         return;
     }
@@ -186,8 +182,17 @@ std::vector<Point> AutocrossPlanner::generate_center_line(std::array<std::vector
         front_point = next_front_point;
         center_line.push_back(front_point);
     }
-    // repeat the process starting from the front point and using the new angle
-    // project a point m_search_distance to the left and right of the car
+
+    // SAFETY CHECK: sometimes, points a little behind of the car are used as front points and the trajectory is generated in the wrong direction
+    // so, if the first point (after the odometry) is behind the odometry, the trajectory is discarded
+    // this is accomplished by projecting a point 1 meter in front of the car and checking if the first point is closer to the odometry than this point
+    Point projected_point = Point(m_odometry->pose.pose.position.x + cos(current_angle), m_odometry->pose.pose.position.y + sin(current_angle));
+    if (point_distance(projected_point, center_line[1]) > point_distance(center_line[0], center_line[1]))
+    {
+        RCLCPP_WARN(get_logger(), "The trajectory is generated in the wrong direction, discarding it");
+        center_line.clear();
+        center_line.push_back(Point(m_odometry->pose.pose.position));
+    }
 
     return center_line;
 }
