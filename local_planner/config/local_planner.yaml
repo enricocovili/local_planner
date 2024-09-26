@@ -18,7 +18,7 @@ local_planner:
           center_line_completed: "/planning/center_line_completed"
 
     autocross:
-      search_angle: 270.0 # degrees
+      search_angle: 220.0 # degrees
       search_distance: 10.0 # m
       max_odom_distance: 15.0  # m
       debug_search_area_topic: "/planning/debug/search_area"

@@ -2,7 +2,7 @@
 
 namespace local_planning {
 
-AutocrossPlanner::AutocrossPlanner() : GenericPlanner() // Call the constructor of the parent class
+AutocrossPlanner::AutocrossPlanner() : GenericPlanner()
 {
     load_params();
 }
@@ -70,7 +70,6 @@ void AutocrossPlanner::slam_cones_cb(mmr_base::msg::Marker::SharedPtr slam_cones
     // publish_borders(cones);
     if (center_line.size() == 1)
     {
-        RCLCPP_WARN(get_logger(), "Center line is empty");
         return;
     }
 
@@ -91,19 +90,15 @@ Point AutocrossPlanner::get_front_point(Point start, double current_angle, std::
     Point front_point;
     // get the closest point to the car that which is in range from -search_angle/2 to search_angle/2
     double min_distance = std::numeric_limits<double>::max();
-    for (size_t i = 0; i < points.size(); i++)
+    for (auto p: points)
     {
-        double angle = atan2(points[i].y - start.y, points[i].x - start.x);
-        double distance = point_distance(points[i], start);
-        if (distance < min_distance && abs(angle - current_angle) < search_angle/2)
+        double angle = atan2(p.y - start.y, p.x - start.x);
+        double distance = point_distance(p, start);
+        if (distance < min_distance && (fabs(angle - current_angle) < search_angle/2 || fabs(angle - current_angle) > 2 * M_PI - search_angle/2))
         {
             min_distance = distance;
-            front_point = points[i];
+            front_point = p;
         }
-    }
-    if (min_distance == std::numeric_limits<double>::max())
-    {
-        return Point(); // danger, no point found
     }
     return front_point;
 }
@@ -181,7 +176,6 @@ std::vector<Point> AutocrossPlanner::generate_center_line(std::array<std::vector
             if (front_point == m_odometry->pose.pose.position)
             {
                 RCLCPP_WARN(get_logger(), "No point in front of the car was found");
-                return center_line;
             }
             return center_line;
         }
@@ -198,4 +192,4 @@ std::vector<Point> AutocrossPlanner::generate_center_line(std::array<std::vector
     return center_line;
 }
 
-} // namespace local_plannings
+} // namespace local_planning
