@@ -69,7 +69,13 @@ void AutocrossPlanner::slam_cones_cb(mmr_base::msg::Marker::SharedPtr slam_cones
         return;
     }
 
-    publish_center_line(center_line);
+    std::vector<Point> smooth_trajectory = smooth_points(center_line);
+    if (smooth_trajectory.size() < 2)
+    {
+        RCLCPP_WARN(get_logger(), "The trajectory is too short");
+        return;
+    }
+    publish_center_line(smooth_trajectory);
 }
 
 double AutocrossPlanner::get_car_direction()
@@ -97,12 +103,6 @@ Point AutocrossPlanner::get_front_point(Point start, double current_angle, std::
         }
     }
     return front_point;
-}
-
-std::array<std::vector<Point>, 2> AutocrossPlanner::generate_borders(std::vector<Point> y_cones, std::vector<Point> b_cones)
-{
-    std::array<std::vector<Point>, 2> borders;
-    return borders;
 }
 
 void AutocrossPlanner::debug_search_area(Point origin, double direction) {
@@ -154,6 +154,12 @@ void AutocrossPlanner::debug_search_area(Point origin, double direction) {
     m_debug_search_area_pub->publish(msg);
 }
 
+std::array<std::vector<Point>, 2> AutocrossPlanner::generate_borders(std::vector<Point> y_cones, std::vector<Point> b_cones)
+{
+    std::array<std::vector<Point>, 2> borders;
+    return borders;
+}
+
 std::vector<Point> AutocrossPlanner::generate_center_line(std::array<std::vector<Point>, 2> borders)
 {
     std::vector<Point> center_line;
@@ -185,11 +191,11 @@ std::vector<Point> AutocrossPlanner::generate_center_line(std::array<std::vector
 
     // SAFETY CHECK: sometimes, points a little behind of the car are used as front points and the trajectory is generated in the wrong direction
     // so, if the first point (after the odometry) is behind the odometry, the trajectory is discarded
-    // this is accomplished by projecting a point 1 meter in front of the car and checking if the first point is closer to the odometry than this point
-    Point projected_point = Point(m_odometry->pose.pose.position.x + cos(current_angle), m_odometry->pose.pose.position.y + sin(current_angle));
-    if (point_distance(projected_point, center_line[1]) > point_distance(center_line[0], center_line[1]))
+    // this is accomplished checking if the first point after odometry is in the search_area
+    double check_angle = atan2(center_line[1].y - center_line[0].y, center_line[1].x - center_line[0].x);
+    if (fabs(check_angle - get_car_direction()) > m_search_angle/2)
     {
-        RCLCPP_WARN(get_logger(), "The trajectory is generated in the wrong direction, discarding it");
+        RCLCPP_WARN(get_logger(), "The trajectory is in the wrong direction, discarding it");
         center_line.clear();
         center_line.push_back(Point(m_odometry->pose.pose.position));
     }

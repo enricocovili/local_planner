@@ -77,6 +77,9 @@ namespace geometry
     double inline deg_to_rad(double deg) { return deg * M_PI / 180; }
     double inline rad_to_deg(double rad) { return rad * 180 / M_PI; }
 
+    Point catmull_rom_spline(const Point& p0, const Point& p1, const Point& p2, const Point& p3, double t);
+    std::vector<Point> smooth_points(const std::vector<Point>& points, int segments = 20); 
+
 } // namespace geometry
 } // namespace local_planning
 #endif // GEOMETRY_LOCAL_PLANNER_HPP
